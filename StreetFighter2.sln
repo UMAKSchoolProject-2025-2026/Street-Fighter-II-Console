@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreetFighter2", "StreetFighter2\StreetFighter2.csproj", "{8E990C2D-4FEC-4E30-9F28-A271C1EC6091}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E990C2D-4FEC-4E30-9F28-A271C1EC6091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E990C2D-4FEC-4E30-9F28-A271C1EC6091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E990C2D-4FEC-4E30-9F28-A271C1EC6091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E990C2D-4FEC-4E30-9F28-A271C1EC6091}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBDF80EC-2CF7-4C71-9F04-42BFB848B49A}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,437 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Console;
+
+namespace StreetFighter2
+{
+    public enum HorizontalAlign { Left, Center, Right }
+    public enum VerticalAlign { Top, Middle, Bottom }
+    class PanelConstructor
+    {
+        //Fields
+        public int LeftWidth { get; private set; }
+        public int CenterWidth { get; private set; }
+        public int RightWidth { get; private set; }
+        public int Height { get; private set; }
+
+        private List<string> leftContent = new List<string>();
+        private List<string> rightContent = new List<string>();
+        private List<string> centerContent = new List<string>();
+
+        public HorizontalAlign LeftAlignH { get; set; } = HorizontalAlign.Center;
+        public HorizontalAlign CenterAlignH { get; set; } = HorizontalAlign.Center;
+        public HorizontalAlign RightAlignH { get; set; } = HorizontalAlign.Center;
+
+        public VerticalAlign LeftAlignV { get; set; } = VerticalAlign.Middle;
+        public VerticalAlign CenterAlignV { get; set; } = VerticalAlign.Middle;
+        public VerticalAlign RightAlignV { get; set; } = VerticalAlign.Middle;
+
+        
+        public bool ShowBorders { get; set; } = true;
+
+        
+        public PanelConstructor(int leftWidth, int rightWidth, int height, bool showBorders = true)
+        {
+            Height = height;
+            ShowBorders = showBorders;
+            InitializeWidths(leftWidth, rightWidth);
+        }
+
+        
+        public PanelConstructor(int leftWidth, int rightWidth, bool showBorders = true)
+        {
+            Height = 0;
+            ShowBorders = showBorders;
+            InitializeWidths(leftWidth, rightWidth);
+        }
+
+        
+        private void InitializeWidths(int leftWidth, int rightWidth)
+        {
+            int totalWidth = WindowWidth;
+            int seperatorCount = ShowBorders ? 2 : 0; 
+
+            LeftWidth = leftWidth;
+            RightWidth = rightWidth;
+
+            CenterWidth = totalWidth - LeftWidth - RightWidth - seperatorCount;
+
+            if (CenterWidth < 10)
+            {
+                int deficit = 10 - CenterWidth;
+                int takeFromLeft = Math.Min((deficit + 1) / 2, Math.Max(0, LeftWidth - 1));
+                int takeFromRight = Math.Min(deficit / 2, Math.Max(0, RightWidth - 1));
+
+                LeftWidth -= takeFromLeft;
+                RightWidth -= takeFromRight;
+
+                CenterWidth = totalWidth - LeftWidth - RightWidth - seperatorCount;
+                if (CenterWidth < 1)
+                {
+                    CenterWidth = 1;
+                }
+            }
+        }
+
+        public void SetLeftContent(params string[] lines)
+        {
+            leftContent = new List<string>(lines);
+            RecalculateHeight();
+        }
+
+        public void SetCenterContent(params string[] lines)
+        {
+            centerContent = new List<string>(lines);
+            RecalculateHeight();
+        }
+
+        public void SetRightContent(params string[] lines)
+        {
+            rightContent = new List<string>(lines);
+            RecalculateHeight();
+        }
+
+        public void Render()
+        {
+            
+            if (ShowBorders)
+            {
+                WriteLine(BuildRuler());
+                WriteLine(BuildRow("", "", ""));
+            }
+
+            var leftLines = ApplyVerticalAlign(leftContent, Height, LeftAlignV);
+            var centerLines = ApplyVerticalAlign(centerContent, Height, CenterAlignV);
+            var rightLines = ApplyVerticalAlign(rightContent, Height, RightAlignV);
+
+            for (int i = 0; i < Height; i++)
+            {
+                string leftText = i < leftLines.Count ? leftLines[i] : "";
+                string centerText = i < centerLines.Count ? centerLines[i] : "";
+                string rightText = i < rightLines.Count ? rightLines[i] : "";
+
+                string leftAligned = ApplyHorizontalAlign(leftText, LeftWidth, LeftAlignH);
+                string centerAligned = ApplyHorizontalAlign(centerText, CenterWidth, CenterAlignH);
+                string rightAligned = ApplyHorizontalAlign(rightText, RightWidth, RightAlignH);
+
+                
+                if (ShowBorders)
+                {
+                    WriteLine(leftAligned + '|' + centerAligned + '|' + rightAligned);
+                }
+                else
+                {
+                    WriteLine(leftAligned + centerAligned + rightAligned);
+                }
+            }
+        }
+
+        public int RenderInteractiveMenu(string[] options, int startingIndex = 0)
+        {
+            int selectedIndex = startingIndex;
+            ConsoleKey keyPressed;
+            int startRow = CursorTop;
+
+            do
+            {
+                List<string> menuLines = new List<string>();
+
+                for (int i = 0; i < options.Length; i++)
+                {
+                    if (i == selectedIndex)
+                    {
+                        menuLines.Add($"> << {options[i]} >>");
+                    }
+                    else
+                    {
+                        menuLines.Add($"  << {options[i]} >>");
+                    }
+                }
+
+                SetCenterContent(menuLines.ToArray());
+                SetCursorPosition(0, startRow);
+
+                
+                if (ShowBorders)
+                {
+                    WriteLine(BuildRuler());
+                    WriteLine(BuildRow("", "", ""));
+                }
+
+                var leftLines = ApplyVerticalAlign(leftContent, Height, LeftAlignV);
+                var centerLines = ApplyVerticalAlign(centerContent, Height, CenterAlignV);
+                var rightLines = ApplyVerticalAlign(rightContent, Height, RightAlignV);
+
+                for (int i = 0; i < Height; i++)
+                {
+                    string leftText = i < leftLines.Count ? leftLines[i] : "";
+                    string centerText = i < centerLines.Count ? centerLines[i] : "";
+                    string rightText = i < rightLines.Count ? rightLines[i] : "";
+
+                    string leftAligned = ApplyHorizontalAlign(leftText, LeftWidth, LeftAlignH);
+                    string rightAligned = ApplyHorizontalAlign(rightText, RightWidth, RightAlignH);
+
+                    string centerAligned;
+                    bool isSelectedLine = centerText.StartsWith(">");
+
+                    if (isSelectedLine)
+                    {
+                        centerAligned = ApplyHorizontalAlign(centerText, CenterWidth, CenterAlignH);
+                        
+                        if (ShowBorders)
+                        {
+                            Write(leftAligned + '|');
+                        }
+                        else
+                        {
+                            Write(leftAligned);
+                        }
+                        
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        Write(centerAligned);
+                        ResetColor();
+                        
+                        if (ShowBorders)
+                        {
+                            WriteLine('|' + rightAligned);
+                        }
+                        else
+                        {
+                            WriteLine(rightAligned);
+                        }
+                    }
+                    else
+                    {
+                        centerAligned = ApplyHorizontalAlign(centerText, CenterWidth, CenterAlignH);
+                        
+                        if (ShowBorders)
+                        {
+                            WriteLine(leftAligned + '|' + centerAligned + '|' + rightAligned);
+                        }
+                        else
+                        {
+                            WriteLine(leftAligned + centerAligned + rightAligned);
+                        }
+                    }
+                }
+
+                ConsoleKeyInfo keyInfo = ReadKey(true);
+                keyPressed = keyInfo.Key;
+
+                if (keyPressed == ConsoleKey.UpArrow)
+                {
+                    selectedIndex--;
+                    if (selectedIndex < 0)
+                    {
+                        selectedIndex = options.Length - 1;
+                    }
+                }
+                else if (keyPressed == ConsoleKey.DownArrow)
+                {
+                    selectedIndex++;
+                    if (selectedIndex >= options.Length)
+                    {
+                        selectedIndex = 0;
+                    }
+                }
+
+            } while (keyPressed != ConsoleKey.Enter);
+
+            return selectedIndex;
+        }
+
+        private List<string> ApplyVerticalAlign(List<string> content, int totalHeight, VerticalAlign align)
+        {
+            var result = new List<string>();
+            int contentLines = content.Count;
+            int emptyLines = Math.Max(0, totalHeight - contentLines);
+
+            switch (align)
+            {
+                case VerticalAlign.Top:
+                    result.AddRange(content);
+                    for (int i = 0; i < emptyLines; i++)
+                    {
+                        result.Add("");
+                    }
+                break;
+                
+                case VerticalAlign.Middle:
+                    int topPadding = emptyLines / 2;
+                    int bottomPadding = emptyLines - topPadding;
+
+                    for (int i = 0; i < topPadding; i++)
+                    {
+                        result.Add("");
+                    }
+                    result.AddRange(content);
+
+                    for (int i = 0; i < bottomPadding; i++)
+                    {
+                        result.Add("");
+                    }
+                    
+                break;
+
+                case VerticalAlign.Bottom:
+                    for (int i = 0; i < emptyLines; i++)
+                    {
+                        result.Add("");
+                    }
+                    result.AddRange(content);
+                break;
+            }
+
+            return result;
+        }
+
+        private string ApplyHorizontalAlign(string text, int width, HorizontalAlign align)
+        {
+            if (text == null)
+            {
+                text = string.Empty;
+            }
+            if (width <= 0)
+            {
+                return string.Empty;
+            }
+
+            if (text.Length > width)
+            {
+                return text.Substring(0, width);
+            }
+
+            int spaces = width - text.Length;
+
+            switch (align)
+            {
+                case HorizontalAlign.Left:
+                    return text + new string(' ', spaces);
+
+                case HorizontalAlign.Center:
+                    int padLeft = spaces / 2;
+                    int padRight = spaces - padLeft;
+                    return new string(' ', padLeft) + text + new string(' ', padRight);
+
+                case HorizontalAlign.Right:
+                    return new string(' ', spaces) + text;
+
+                default:
+                    return text;
+            }
+        }
+
+        private void RecalculateHeight()
+        {
+            
+            if (Height == 0)
+            {
+                int maxLines = Math.Max(leftContent.Count, Math.Max(centerContent.Count, rightContent.Count));
+                Height = Math.Max(1, maxLines); 
+            }
+        }
+
+        private string BuildRuler()
+        {
+            string leftPart = new string('=', LeftWidth);
+            string centerPart = new string('=', CenterWidth);
+            string rightPart = new string('=', RightWidth);
+
+            return leftPart + '|' + centerPart + '|' + rightPart;
+        }
+
+        private string CenterText(string text, int width)
+        {
+            if (text == null)
+            {
+                text = string.Empty;
+            }
+            if (width <= 0)
+            {
+                return string.Empty;
+            }
+
+            if (text.Length > width)
+            {
+                return text.Substring(0, width);
+            }
+
+            int space = width - text.Length;
+            int padLeft = space / 2;
+            int padRight = space - padLeft;
+
+            return new string(' ', padLeft) + text + new string(' ', padRight);
+        }
+
+        public string BuildRow(string leftText, string centerText, string rightText)
+        {
+            string left = CenterText(leftText, LeftWidth);
+            string center = CenterText(centerText, CenterWidth);
+            string right = CenterText(rightText, RightWidth);
+
+            return left + '|' + center + '|' + right;
+        }
+
+        private int CountChar(string text, char character, int startIndex, int length)
+        {
+            if (text == null || startIndex < 0 || length < 0 || startIndex >= text.Length)
+            {
+                return 0;
+            }
+
+            int end = Math.Min(text.Length, startIndex + length);
+
+            int count = 0;
+            for (int i = startIndex; i < end; i++)
+            {
+                if (text[i] == character)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        public void ShowDemo(string leftLabel, string centerLabel, string rightLabel, int rows)
+        {
+            if (ShowBorders)
+            {
+                string ruler = BuildRuler();
+                WriteLine(ruler);
+
+                string boundaryLine = new string(' ', LeftWidth) + '|' +
+                                      new string(' ', CenterWidth) + '|' +
+                                      new string(' ', RightWidth);
+
+                WriteLine(boundaryLine);
+            }
+
+            for (int i = 0; i < rows; i++)
+            {
+                string row = BuildRow(leftLabel, centerLabel, rightLabel);
+                WriteLine(row);
+            }
+
+            if (ShowBorders)
+            {
+                string ruler = BuildRuler();
+                int leftSize = CountChar(ruler, '=', 0, LeftWidth);
+                int centerStart = LeftWidth + 1;
+                int centerSize = CountChar(ruler, '=', centerStart, CenterWidth);
+                int rightStart = centerStart + CenterWidth + 1;
+                int rightSize = CountChar(ruler, '=', rightStart, RightWidth);
+
+                WriteLine();
+                WriteLine("stats:");
+                WriteLine($"left size: {leftSize}");
+                WriteLine($"center size: {centerSize}");
+                WriteLine($"right size: {rightSize}");
+            }
+        }
+    }
+}
