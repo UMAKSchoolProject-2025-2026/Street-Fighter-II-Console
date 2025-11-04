@@ -3,21 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using StreetFighter2.Combat; 
 
 namespace StreetFighter2.Fighters
 {   
 
-    enum Move
-    {
-        LightAttack,
-        HeavyAttack,
-        Block,
-        Dodge,
-        Throw,
-        Special
-    }
-
-    class Fighter
+    public class Fighter
     {
         //Fields
         private string name;
@@ -32,6 +23,13 @@ namespace StreetFighter2.Fighters
         private int wins;
         const int maxWins = 2;
 
+       
+        private string nationality;
+        private string background;
+
+        private string[] characterSelectLeft;
+        private string[] characterSelectRight;
+
         //Constructor
         public Fighter(string name, int maxHealth, int currentHealth, int attackPower, int defensePower, int specialMovePower, int specialMoveCost, int spBar, int spBarMax, int wins)
         {
@@ -45,11 +43,19 @@ namespace StreetFighter2.Fighters
             this.spBar = spBar;
             this.spBarMax = spBarMax;
             this.wins = wins;
+            
+            
+            this.nationality = "";
+            this.background = "";
+            
+            
+            this.characterSelectLeft = new string[0];
+            this.characterSelectRight = new string[0];
         }
 
         public Fighter()
         {
-            name = "Unkown";
+            name = "Unknown";
             maxHealth = 200;
             currentHealth = 200;
             attackPower = 0;
@@ -59,6 +65,14 @@ namespace StreetFighter2.Fighters
             spBar = 100;
             spBarMax = 100;
             wins = 0;
+            
+           
+            nationality = "";
+            background = "";
+            
+            
+            characterSelectLeft = new string[0];
+            characterSelectRight = new string[0];
         }
 
         //Methods
@@ -120,7 +134,29 @@ namespace StreetFighter2.Fighters
             set { wins = value; }
         }
 
-        
+        public string Nationality
+        {
+            get { return nationality; }
+            set { nationality = value; }
+        }
+
+        public string Background
+        {
+            get { return background; }
+            set { background = value; }
+        }
+
+        public string[] CharacterSelectLeft
+        {
+            get { return characterSelectLeft; }
+            set { characterSelectLeft = value; }
+        }
+
+        public string[] CharacterSelectRight
+        {
+            get { return characterSelectRight; }
+            set { characterSelectRight = value; }
+        }
 
         //Display Fighter Info
         public void DisplayInfo()

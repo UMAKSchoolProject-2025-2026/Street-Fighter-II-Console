@@ -33,6 +33,10 @@ namespace StreetFighter2
         public bool ShowBorders { get; set; } = true;
 
         
+        public bool AutoWrapLeft { get; set; } = false;
+        public bool AutoWrapCenter { get; set; } = false;
+        public bool AutoWrapRight { get; set; } = false;
+
         public PanelConstructor(int leftWidth, int rightWidth, int height, bool showBorders = true)
         {
             Height = height;
@@ -78,19 +82,40 @@ namespace StreetFighter2
 
         public void SetLeftContent(params string[] lines)
         {
-            leftContent = new List<string>(lines);
+            if (AutoWrapLeft)
+            {
+                leftContent = WrapText(lines, LeftWidth);
+            }
+            else
+            {
+                leftContent = new List<string>(lines);
+            }
             RecalculateHeight();
         }
 
         public void SetCenterContent(params string[] lines)
         {
-            centerContent = new List<string>(lines);
+            if (AutoWrapCenter)
+            {
+                centerContent = WrapText(lines, CenterWidth);
+            }
+            else
+            {
+                centerContent = new List<string>(lines);
+            }
             RecalculateHeight();
         }
 
         public void SetRightContent(params string[] lines)
         {
-            rightContent = new List<string>(lines);
+            if (AutoWrapRight)
+            {
+                rightContent = WrapText(lines, RightWidth);
+            }
+            else
+            {
+                rightContent = new List<string>(lines);
+            }
             RecalculateHeight();
         }
 
@@ -242,6 +267,182 @@ namespace StreetFighter2
             } while (keyPressed != ConsoleKey.Enter);
 
             return selectedIndex;
+        }
+
+        public void RenderWithColors()
+        {
+            
+            if (ShowBorders)
+            {
+                WriteLine(BuildRuler());
+                WriteLine(BuildRow("", "", ""));
+            }
+
+            var leftLines = ApplyVerticalAlign(leftContent, Height, LeftAlignV);
+            var centerLines = ApplyVerticalAlign(centerContent, Height, CenterAlignV);
+            var rightLines = ApplyVerticalAlign(rightContent, Height, RightAlignV);
+
+            for (int i = 0; i < Height; i++)
+            {
+                string leftText = i < leftLines.Count ? leftLines[i] : "";
+                string centerText = i < centerLines.Count ? centerLines[i] : "";
+                string rightText = i < rightLines.Count ? rightLines[i] : "";
+
+              
+                bool leftHighlight = leftText.StartsWith(ConsoleMenu.HIGHLIGHT_MARKER);
+                bool centerHighlight = centerText.StartsWith(ConsoleMenu.HIGHLIGHT_MARKER);
+                bool rightHighlight = rightText.StartsWith(ConsoleMenu.HIGHLIGHT_MARKER);
+
+                if (leftHighlight) leftText = leftText.Substring(ConsoleMenu.HIGHLIGHT_MARKER.Length);
+                if (centerHighlight) centerText = centerText.Substring(ConsoleMenu.HIGHLIGHT_MARKER.Length);
+                if (rightHighlight) rightText = rightText.Substring(ConsoleMenu.HIGHLIGHT_MARKER.Length);
+
+                string leftAligned = ApplyHorizontalAlign(leftText, LeftWidth, LeftAlignH);
+                string centerAligned = ApplyHorizontalAlign(centerText, CenterWidth, CenterAlignH);
+                string rightAligned = ApplyHorizontalAlign(rightText, RightWidth, RightAlignH);
+
+                
+                if (ShowBorders)
+                {
+                    
+                    if (leftHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        Write(leftAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        Write(leftAligned);
+                    }
+
+                    Write('|');
+
+                  
+                    if (centerHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        Write(centerAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        Write(centerAligned);
+                    }
+
+                    Write('|');
+
+                   
+                    if (rightHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        WriteLine(rightAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        WriteLine(rightAligned);
+                    }
+                }
+                else
+                {
+                 
+                    if (leftHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        Write(leftAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        Write(leftAligned);
+                    }
+
+                 
+                    if (centerHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        Write(centerAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        Write(centerAligned);
+                    }
+
+                    
+                    if (rightHighlight)
+                    {
+                        ForegroundColor = ConsoleColor.Black;
+                        BackgroundColor = ConsoleColor.White;
+                        WriteLine(rightAligned);
+                        ResetColor();
+                    }
+                    else
+                    {
+                        WriteLine(rightAligned);
+                    }
+                }
+            }
+        }
+
+        public void RenderWithLeftPanelInverted()
+        {
+            if (ShowBorders)
+            {
+                WriteLine(BuildRuler());
+                WriteLine(BuildRow("", "", ""));
+            }
+
+            var leftLines = ApplyVerticalAlign(leftContent, Height, LeftAlignV);
+            var centerLines = ApplyVerticalAlign(centerContent, Height, CenterAlignV);
+            var rightLines = ApplyVerticalAlign(rightContent, Height, RightAlignV);
+
+            for (int i = 0; i < Height; i++)
+            {
+                string leftText = i < leftLines.Count ? leftLines[i] : "";
+                string centerText = i < centerLines.Count ? centerLines[i] : "";
+                string rightText = i < rightLines.Count ? rightLines[i] : "";
+
+                string leftAligned = ApplyHorizontalAlign(leftText, LeftWidth, LeftAlignH);
+                string centerAligned = ApplyHorizontalAlign(centerText, CenterWidth, CenterAlignH);
+                string rightAligned = ApplyHorizontalAlign(rightText, RightWidth, RightAlignH);
+
+                if (ShowBorders)
+                {
+                    
+                    ForegroundColor = ConsoleColor.Black;
+                    BackgroundColor = ConsoleColor.White;
+                    Write(leftAligned);
+                    ResetColor();
+                    
+                    Write('|');
+                    
+                    
+                    Write(centerAligned);
+                    Write('|');
+                    
+                    
+                    WriteLine(rightAligned);
+                }
+                else
+                {
+                    
+                    ForegroundColor = ConsoleColor.Black;
+                    BackgroundColor = ConsoleColor.White;
+                    Write(leftAligned);
+                    ResetColor();
+                    
+                    
+                    Write(centerAligned);
+                    WriteLine(rightAligned);
+                }
+            }
         }
 
         private List<string> ApplyVerticalAlign(List<string> content, int totalHeight, VerticalAlign align)
@@ -432,6 +633,72 @@ namespace StreetFighter2
                 WriteLine($"center size: {centerSize}");
                 WriteLine($"right size: {rightSize}");
             }
+        }
+
+        private List<string> WrapText(string[] lines, int maxWidth)
+        {
+            List<string> wrappedLines = new List<string>();
+            
+            foreach (string line in lines)
+            {
+                if (string.IsNullOrEmpty(line))
+                {
+                    wrappedLines.Add("");
+                    continue;
+                }
+                
+                if (line.Length <= maxWidth)
+                {
+                    wrappedLines.Add(line);
+                }
+                else
+                {
+                    
+                    string remainingText = line;
+                    while (remainingText.Length > maxWidth)
+                    {
+                        int wrapIndex = maxWidth;
+                        
+                       
+                        int lastSpace = remainingText.LastIndexOf(' ', maxWidth);
+                        if (lastSpace > maxWidth / 2) 
+                        {
+                            wrapIndex = lastSpace;
+                        }
+                        
+                        wrappedLines.Add(remainingText.Substring(0, wrapIndex).TrimEnd());
+                        remainingText = remainingText.Substring(wrapIndex).TrimStart();
+                    }
+                    
+                    if (remainingText.Length > 0)
+                    {
+                        wrappedLines.Add(remainingText);
+                    }
+                }
+            }
+            
+            return wrappedLines;
+        }
+
+        
+        public static List<string> BuildHighlightedList(string[] items, int selectedIndex, string highlightMarker, bool isActive = true)
+        {
+            List<string> content = new List<string>();
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (isActive && i == selectedIndex)
+                {
+                    
+                    content.Add($"{highlightMarker}>>> {items[i]} <<<");
+                }
+                else
+                {
+                    content.Add($"    {items[i]}");
+                }
+            }
+
+            return content;
         }
     }
 }

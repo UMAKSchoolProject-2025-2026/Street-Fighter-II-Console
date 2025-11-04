@@ -9,6 +9,7 @@ namespace StreetFighter2
 {
     class GameManager
     {
+        private AudioManager audioManger = new AudioManager();
         public void checkpoint()
         {
             Console.Clear();
@@ -31,11 +32,18 @@ Once in fullscreen pressy any key to continue......
         }
         private void runMainMenu()
         {
+            CursorVisible = false;
+            Clear();
+
+            audioManger.PlayMusic("Audio/menu_theme.mp3", loop: true);
+            audioManger.SetVolume(0.5f);
+
             PanelConstructor titlePanel = new PanelConstructor(10, 10);
 
             titlePanel.CenterAlignH = HorizontalAlign.Center;
             titlePanel.CenterAlignV = VerticalAlign.Top;
             titlePanel.ShowBorders = false;
+
 
 
             string title = @"
@@ -76,7 +84,7 @@ Once in fullscreen pressy any key to continue......
             
             int selectedIndex = menuPanel.RenderInteractiveMenu(options);
 
-            CursorVisible = true;  
+            CursorVisible = true;
 
             
             switch (selectedIndex)
@@ -98,7 +106,8 @@ Once in fullscreen pressy any key to continue......
 
         private void gameStart()
         {
-
+            CharacterSelect characterSelect = new CharacterSelect(audioManger);
+            characterSelect.Show();
         }
 
         private void v_s_Battle()
