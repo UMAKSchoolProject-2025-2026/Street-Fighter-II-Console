@@ -17,17 +17,36 @@ namespace StreetFighter2.Combat
         {
             TurnResult result = new TurnResult();
 
-            
-            Move validatedAttackerMove = ValidateAndConvertSpecial(attacker, attackerMove, attackerName, result);
-            Move validatedDefenderMove = ValidateAndConvertSpecial(defender, defenderMove, defenderName, result);
-
-            bool attackerHasValidSpecial = validatedAttackerMove == Move.Special;
-            bool defenderHasValidSpecial = validatedDefenderMove == Move.Special;
-
-            
+           
             bool attackerIsPlayer1 = attackerName.Contains("1") || attackerName == "P1";
 
+            bool attackerSpecialFailed = false;
+            bool defenderSpecialFailed = false;
             
+            Move validatedAttackerMove = attackerMove;
+            Move validatedDefenderMove = defenderMove;
+            
+            if (attackerMove == Move.Special && attacker.SpBar < attacker.SpecialMoveCost)
+            {
+                result.AddLog($"{attackerName} tried to use their special move, but didn't have enough SP!");
+                result.AddLog($"{attackerName} is left wide open!");
+                attackerSpecialFailed = true;
+                validatedAttackerMove = Move.Block;
+            }
+            
+            if (defenderMove == Move.Special && defender.SpBar < defender.SpecialMoveCost)
+            {
+                result.AddLog($"{defenderName} tried to use their special move, but didn't have enough SP!");
+                result.AddLog($"{defenderName} is left wide open!");
+                defenderSpecialFailed = true;
+                validatedDefenderMove = Move.Block; 
+            }
+
+      
+            bool attackerHasValidSpecial = validatedAttackerMove == Move.Special && !attackerSpecialFailed;
+            bool defenderHasValidSpecial = validatedDefenderMove == Move.Special && !defenderSpecialFailed;
+
+          
             if (attackerHasValidSpecial && defenderHasValidSpecial)
             {
                 string attackerSpecial = GetSpecialMoveName(attacker);
@@ -44,17 +63,17 @@ namespace StreetFighter2.Combat
             if (attackerHasValidSpecial)
             {
                 ApplySpecial(attacker, defender, attackerName, defenderName, result, attackerIsPlayer1);
-                return result; 
+                return result;
             }
 
-          
+           
             if (defenderHasValidSpecial)
             {
                 ApplySpecial(defender, attacker, defenderName, attackerName, result, !attackerIsPlayer1);
-                return result; 
+                return result;
             }
 
-          
+            
             if (validatedAttackerMove == validatedDefenderMove && 
                 (validatedAttackerMove == Move.LightAttack || validatedAttackerMove == Move.HeavyAttack))
             {
@@ -67,66 +86,91 @@ namespace StreetFighter2.Combat
                 return result;
             }
 
-            
+           
             DescribeInteraction(validatedAttackerMove, validatedDefenderMove, attackerName, defenderName, result);
 
-           
+            
             bool attackerHitsFirst = DetermineInitiative(validatedAttackerMove, validatedDefenderMove);
 
+            
             if (attackerHitsFirst)
             {
-                ApplyMove(attacker, defender, validatedAttackerMove, validatedDefenderMove, attackerName, defenderName, result, attackerIsPlayer1);
+                if (defenderSpecialFailed)
+                {
+                    
+                    ApplyMoveIgnoreDefense(attacker, defender, validatedAttackerMove, attackerName, defenderName, result, attackerIsPlayer1);
+                }
+                else
+                {
+                    ApplyMove(attacker, defender, validatedAttackerMove, validatedDefenderMove, attackerName, defenderName, result, attackerIsPlayer1);
+                }
+                
                 if (defender.CurrentHealth > 0 && validatedDefenderMove != Move.Block && validatedDefenderMove != Move.Dodge)
                 {
-                    ApplyMove(defender, attacker, validatedDefenderMove, validatedAttackerMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                    if (attackerSpecialFailed)
+                    {
+                       
+                        ApplyMoveIgnoreDefense(defender, attacker, validatedDefenderMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                    }
+                    else
+                    {
+                        ApplyMove(defender, attacker, validatedDefenderMove, validatedAttackerMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                    }
                 }
             }
             else
             {
-                ApplyMove(defender, attacker, validatedDefenderMove, validatedAttackerMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                if (attackerSpecialFailed)
+                {
+                    
+                    ApplyMoveIgnoreDefense(defender, attacker, validatedDefenderMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                }
+                else
+                {
+                    ApplyMove(defender, attacker, validatedDefenderMove, validatedAttackerMove, defenderName, attackerName, result, !attackerIsPlayer1);
+                }
+                
                 if (attacker.CurrentHealth > 0 && validatedAttackerMove != Move.Block && validatedAttackerMove != Move.Dodge)
                 {
-                    ApplyMove(attacker, defender, validatedAttackerMove, validatedDefenderMove, attackerName, defenderName, result, attackerIsPlayer1);
+                    if (defenderSpecialFailed)
+                    {
+                        
+                        ApplyMoveIgnoreDefense(attacker, defender, validatedAttackerMove, attackerName, defenderName, result, attackerIsPlayer1);
+                    }
+                    else
+                    {
+                        ApplyMove(attacker, defender, validatedAttackerMove, validatedDefenderMove, attackerName, defenderName, result, attackerIsPlayer1);
+                    }
                 }
             }
 
             return result;
         }
 
-        private Move ValidateAndConvertSpecial(Fighter fighter, Move move, string fighterName, TurnResult result)
+       
+        private void ApplyMoveIgnoreDefense(Fighter attacker, Fighter defender, Move attackerMove, string attackerName, string defenderName, TurnResult result, bool attackerIsPlayer1)
         {
-            if (move == Move.Special && fighter.SpBar < fighter.SpecialMoveCost)
+            int damage = 0;
+            
+            if (attackerMove == Move.LightAttack)
             {
-                result.AddLog($"{fighterName} tried to use their special move, but didn't have enough SP!");
-                result.SpecialFailed = true;
-               
-                return Move.Block;
+                damage = attacker.AttackPower;
+                defender.CurrentHealth -= damage;
+                attacker.SpBar = Math.Min(attacker.SpBar + 10, attacker.SpBarMax);
             }
-            return move;
-        }
-
-        private string GetSpecialMoveName(Fighter fighter)
-        {
-            switch (fighter.Name)
+            else if (attackerMove == Move.HeavyAttack)
             {
-                case "Ryu":
-                    return "HADOUKEN";
-                case "Ken":
-                    return "SHORYUKEN";
-                case "Chun-Li":
-                    return "KIKOKEN";
-                case "Guile":
-                    return "SONIC BOOM";
-                case "Blanka":
-                    return "ELECTRIC THUNDER";
-                case "E. Honda":
-                    return "HUNDRED HAND SLAP";
-                case "Dhalsim":
-                    return "YOGA FLAME";
-                case "Zangief":
-                    return "SPINNING PILEDRIVER";
-                default:
-                    return "SPECIAL MOVE";
+                damage = attacker.AttackPower * 2;
+                defender.CurrentHealth -= damage;
+                attacker.SpBar = Math.Min(attacker.SpBar + 15, attacker.SpBarMax);
+            }
+            
+            if (damage > 0)
+            {
+                if (attackerIsPlayer1)
+                    result.DamageToPlayer2 += damage;
+                else
+                    result.DamageToPlayer1 += damage;
             }
         }
 
@@ -364,6 +408,31 @@ namespace StreetFighter2.Combat
                 result.DamageToPlayer2 += damage;
             else
                 result.DamageToPlayer1 += damage;
+        }
+
+        private string GetSpecialMoveName(Fighter fighter)
+        {
+            switch (fighter.Name)
+            {
+                case "Ryu":
+                    return "HADOUKEN";
+                case "Ken":
+                    return "SHORYUKEN";
+                case "Chun-Li":
+                    return "KIKOKEN";
+                case "Guile":
+                    return "SONIC BOOM";
+                case "Blanka":
+                    return "ELECTRIC THUNDER";
+                case "E. Honda":
+                    return "HUNDRED HAND SLAP";
+                case "Dhalsim":
+                    return "YOGA FLAME";
+                case "Zangief":
+                    return "SPINNING PILEDRIVER";
+                default:
+                    return "SPECIAL MOVE";
+            }
         }
     }
 }

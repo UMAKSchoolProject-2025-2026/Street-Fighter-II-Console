@@ -287,7 +287,7 @@ namespace StreetFighter2
         {
             List<string> actions = new List<string>();
 
-            
+          
             string moveName = GetMoveName(move);
             actions.Add($"{playerPrefix} - {playerName}");
             actions.Add($"used {moveName}");
@@ -302,23 +302,23 @@ namespace StreetFighter2
             {
                 actions.Add("Forces cancelled!");
             }
-            else if (damageDealt > 0)
-            {
-                actions.Add(">> Damage Dealt:");
-                actions.Add($"   {damageDealt} HP");
-            }
-            else if (damageReceived > 0)
-            {
-                actions.Add("<< Damage Taken:");
-                actions.Add($"   {damageReceived} HP");
-            }
-            else
-            {
-                actions.Add("No damage");
-            }
+            else if (damageReceived > 0)  
+    {
+        actions.Add("<< Damage Taken:");
+        actions.Add($"   {damageReceived} HP");
+    }
+    else if (damageDealt > 0)  
+    {
+        actions.Add(">> Damage Dealt:");
+        actions.Add($"   {damageDealt} HP");
+    }
+    else
+    {
+        actions.Add("No damage");
+    }
 
-            return actions.ToArray();
-        }
+    return actions.ToArray();
+}
 
         private string GetMoveName(Move move)
         {
