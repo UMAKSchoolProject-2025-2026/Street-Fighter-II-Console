@@ -6,28 +6,26 @@ using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: Guile inherits from Fighter base class
+    // ============================================================
     class Guile : Fighter
     {
-        //Constructor
         public Guile()
         {
-            
             Name = "Guile";
-            MaxHealth = 210;
-            CurrentHealth = 210;
+            MaxHealth = 200;
+            CurrentHealth = 200;
             AttackPower = 24;
-            DefensePower = 28;
+            DefensePower = 30;
             SpecialMovePower = 90;
-            SpecialMoveCost = 70;
+            SpecialMoveCost = 65;
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
+            Nationality = "American";
+            Background = "U.S. Air Force Major. Disciplined soldier seeking revenge for his friend Charlie. Masters defensive tactics and patient counterattacks.";
 
-            
-            Nationality = "American (US Air Force)";
-            Background = "Special Forces operative. Disciplined soldier seeking justice for his fallen comrade. Uses military close-quarters combatives and sonic boom shockwaves.";
-
-            
             string leftArt = @"
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -88,9 +86,46 @@ namespace StreetFighter2.Fighters
 ▓▓▓▓▒▒▒▒▒▓▓▒▒▒▒▒▒▒▓▓▓▓▓▒▒▒▓▓▒▒▓▓▓▒░▓▓▓▓▓▓▒▓▓▓▓▓▒▒▒▓▓▓▓▓███████████████▓▓▓▓▓▓▓▓▓▓";
 
             CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Guile-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "SONIC BOOM";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Guile-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "A high-speed sonic wave projectile that travels across the battlefield!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - Guile is defensive, blocks better
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (defenseMove == Move.Block && attackMove == Move.HeavyAttack)
+                return 60;
+            if (defenseMove == Move.Block && attackMove == Move.LightAttack)
+                return 0;
+            if (attackMove == Move.HeavyAttack && defenseMove == Move.Dodge)
+                return 0;
+            
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Guile gains more SP on blocks
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 8, SpBarMax);
         }
     }
 }

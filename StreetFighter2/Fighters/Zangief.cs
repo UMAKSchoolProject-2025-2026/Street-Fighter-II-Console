@@ -6,28 +6,26 @@ using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: Zangief inherits from Fighter base class
+    // ============================================================
     class Zangief : Fighter
     {
-        //Constructor
         public Zangief()
         {
-            
-            Name = "Zangief";  
-            MaxHealth = 200;
-            CurrentHealth = 200;
-            AttackPower = 25;
-            DefensePower = 20;
-            SpecialMovePower = 50;
-            SpecialMoveCost = 50;
+            Name = "Zangief";
+            MaxHealth = 220;
+            CurrentHealth = 220;
+            AttackPower = 30;
+            DefensePower = 28;
+            SpecialMovePower = 120;
+            SpecialMoveCost = 75;
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
-
-            
             Nationality = "Russian";
-            Background = "“Red Cyclone” — professional wrestler who trains by wrestling bears in Siberia. Patriot who wants to prove the strength of Russian power wrestling.";
+            Background = "Professional wrestler known as the Red Cyclone. Fights for Mother Russia and to prove wrestling's superiority. Incredibly strong but slow.";
 
-            
             string leftArt = @"
 ████████████████████████████████████████████████████████████████████████████████████████████████████
 ████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -106,10 +104,58 @@ namespace StreetFighter2.Fighters
 ███▓▒░░   ░░░ ░░░  ░    ░▒▓░░░░░░░░░░░░░░▒▓█▓░░░░░░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░   ░░▒▒░░░░░░ ░░▓██
 ████▓▒░░░   ░ ░░░░░   ░▒▒▒▒░░▒░░░░░░░░░░▓███░░░░░░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░ ░░░▓░░░░░░█████
 █████████░░░░   ░░░░▓▓▓▓▓▒▒▓░░░░░▒▒░░░▒█████░░░░░░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░ ░░▒▒▓█████████";
-            CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-            
+            CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Zangief-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "SPINNING PILEDRIVER";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Zangief-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "Grabs the opponent and spins them into the ground with devastating force!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - Zangief is tank, massive damage
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (attackMove == Move.HeavyAttack)
+                return 140;
+            if (attackMove == Move.Special)
+                return 125;
+            if (defenseMove == Move.Dodge && attackMove == Move.HeavyAttack)
+                return 0;
+            if (attackMove == Move.LightAttack && defenseMove == Move.Block)
+                return 0;
+            
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Zangief gains SP slowly
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 6, SpBarMax);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Zangief is tough, high SP gain when hit
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 15, SpBarMax);
         }
     }
 }

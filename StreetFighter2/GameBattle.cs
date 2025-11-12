@@ -10,8 +10,13 @@ using StreetFighter2.Combat;
 
 namespace StreetFighter2
 {
+    // GameBattle: orchestrates a single battle.
+    // OOP notes:
+    // - Encapsulation: keeps fighter/state UI and combat logic private to this class.
+    // - Composition: depends on CombatResolver and AIOpponent to delegate behavior.
     class GameBattle
     {
+        // Encapsulated state for the battle instance
         private Fighter player1;
         private Fighter player2;
         private AudioManager audioManager;
@@ -23,10 +28,11 @@ namespace StreetFighter2
         private StatusBar player2HealthBar;
         private StatusBar player2SpecialBar;
 
+        // Composition: delegates combat decisions and AI to these collaborators
         private CombatResolver combatResolver;
         private AIOpponent aiOpponent;
 
-        
+        // DTO usage: TurnResult carries outcome details between CombatResolver and UI
         private TurnResult lastTurnResult;
         private Move lastPlayer1Move;
         private Move lastPlayer2Move;
@@ -42,6 +48,7 @@ namespace StreetFighter2
             player2HealthBar = new StatusBar(player2.CurrentHealth, player2.MaxHealth);
             player2SpecialBar = new StatusBar(player2.SpBar, player2.SpBarMax);
 
+            // Concrete collaborators created here (could be injected for testability)
             combatResolver = new CombatResolver();
             aiOpponent = new AIOpponent();
 
@@ -50,6 +57,7 @@ namespace StreetFighter2
             lastPlayer2Move = Move.LightAttack;
         }
 
+        // Orchestration method: main game loop (Controller role)
         public void Show()
         {
             CursorVisible = false;
@@ -70,22 +78,21 @@ namespace StreetFighter2
 
                 Move player2Move = aiOpponent.GetMove();
 
-                
                 lastPlayer1Move = player1Move;
                 lastPlayer2Move = player2Move;
 
+                // Delegate core combat logic to CombatResolver (single responsibility)
                 TurnResult turnResult = combatResolver.ResolveTurn(
-                    player1, player2, 
+                    player1, player2,
                     player1Move, player2Move,
-                    player1.Name, player2.Name
+                    "P1", "P2"
                 );
 
-                
                 lastTurnResult = turnResult;
 
-                UpdateStatusBars();
+                UpdateStatusBars(); // Encapsulated UI state update
 
-                ShowTurnResult(turnResult);
+                ShowTurnResult(turnResult); // Terminal UI presentation
 
                 if (player1.CurrentHealth <= 0 || player2.CurrentHealth <= 0)
                 {
@@ -97,6 +104,7 @@ namespace StreetFighter2
             CursorVisible = true;
         }
 
+        // Simple mapping between UI selection and domain Move enum
         private Move GetMoveFromSelection(int panel, int index)
         {
             switch (panel)
@@ -112,13 +120,14 @@ namespace StreetFighter2
             }
         }
 
+        // Niche: turn presentation; presentation separated from combat computation
         private void ShowTurnResult(TurnResult result)
         {
-            
             RenderFullScreen();
             Thread.Sleep(2000);
         }
 
+        // UI input loop (keeps input handling separate from game logic)
         private int GetPlayerAction()
         {
             ConsoleKey keyPressed;
@@ -180,6 +189,7 @@ namespace StreetFighter2
             return (selectedPanel * 100) + selectedIndex;
         }
 
+        // Encapsulation: keep status-bar updates in one method
         private void UpdateStatusBars()
         {
             player1HealthBar.UpdateValue(player1.CurrentHealth);
@@ -188,11 +198,11 @@ namespace StreetFighter2
             player2SpecialBar.UpdateValue(player2.SpBar);
         }
 
+        // UI composition: top/middle/bottom panels assembled here (separation of concerns)
         private void RenderFullScreen()
         {
-            
             Clear();
-            
+
             SetCursorPosition(0, 0);
 
             RenderTopPanel();
@@ -200,6 +210,7 @@ namespace StreetFighter2
             RenderBottomPanel();
         }
 
+        // UI: builds top panel from player view-models
         private void RenderTopPanel()
         {
             int sideWidth = (WindowWidth - 2) / 3;
@@ -225,6 +236,7 @@ namespace StreetFighter2
             topPanel.Render();
         }
 
+        // Pure view-model builder for the top panel
         private string[] BuildPlayerStats(string playerLabel, StatusBar healthBar, StatusBar specialBar, Fighter player)
         {
             List<string> stats = new List<string>();
@@ -234,17 +246,17 @@ namespace StreetFighter2
             stats.Add($"HEALTH: {healthBar.CurrentValue}/{healthBar.MaxValue}");
             stats.Add(healthBar.BuildBar());
             stats.Add("");
-            
-            
+
             bool specialReady = specialBar.IsReady(player.SpecialMoveCost);
             string readyIndicator = specialReady ? " * READY!" : "";
-            
+
             stats.Add($"SPECIAL: {specialBar.CurrentValue}/{specialBar.MaxValue}{readyIndicator}");
             stats.Add(specialBar.BuildBar());
 
             return stats.ToArray();
         }
 
+        // Middle panel renders turn logs and per-player action summaries
         private void RenderMiddlePanel()
         {
             PanelConstructor middlePanel = new PanelConstructor(60, 60, 45, showBorders: false);
@@ -259,13 +271,9 @@ namespace StreetFighter2
 
             if (lastTurnResult != null)
             {
-               
                 string[] p1Actions = BuildPlayerActions("P1", player1.Name, lastPlayer1Move, lastTurnResult, true);
-                
-                
                 string[] p2Actions = BuildPlayerActions("P2", player2.Name, lastPlayer2Move, lastTurnResult, false);
 
-                
                 string[] centerContent = lastTurnResult.Logs.ToArray();
 
                 middlePanel.SetLeftContent(p1Actions);
@@ -274,7 +282,6 @@ namespace StreetFighter2
             }
             else
             {
-               
                 middlePanel.SetLeftContent("");
                 middlePanel.SetCenterContent("");
                 middlePanel.SetRightContent("");
@@ -283,43 +290,47 @@ namespace StreetFighter2
             middlePanel.Render();
         }
 
+        // View-model builder that converts TurnResult DTO into display lines
         private string[] BuildPlayerActions(string playerPrefix, string playerName, Move move, TurnResult result, bool isPlayer1)
         {
             List<string> actions = new List<string>();
 
-          
             string moveName = GetMoveName(move);
             actions.Add($"{playerPrefix} - {playerName}");
             actions.Add($"used {moveName}");
             actions.Add("");
-            
-            
-            int damageDealt = isPlayer1 ? result.DamageToPlayer2 : result.DamageToPlayer1;
-            int damageReceived = isPlayer1 ? result.DamageToPlayer1 : result.DamageToPlayer2;
-            
-            
+
+            int damageThisPlayerReceived = isPlayer1 ? result.DamageToPlayer1 : result.DamageToPlayer2;
+            int damageThisPlayerDealt = isPlayer1 ? result.DamageToPlayer2 : result.DamageToPlayer1;
+
             if (result.Cancelled)
             {
                 actions.Add("Forces cancelled!");
             }
-            else if (damageReceived > 0)  
-    {
-        actions.Add("<< Damage Taken:");
-        actions.Add($"   {damageReceived} HP");
-    }
-    else if (damageDealt > 0)  
-    {
-        actions.Add(">> Damage Dealt:");
-        actions.Add($"   {damageDealt} HP");
-    }
-    else
-    {
-        actions.Add("No damage");
-    }
+            else
+            {
+                if (damageThisPlayerDealt > 0)
+                {
+                    actions.Add(">> Damage Dealt:");
+                    actions.Add($"   {damageThisPlayerDealt} HP");
+                }
 
-    return actions.ToArray();
-}
+                if (damageThisPlayerReceived > 0)
+                {
+                    actions.Add("<< Damage Taken:");
+                    actions.Add($"   {damageThisPlayerReceived} HP");
+                }
 
+                if (damageThisPlayerDealt == 0 && damageThisPlayerReceived == 0)
+                {
+                    actions.Add("No damage");
+                }
+            }
+
+            return actions.ToArray();
+        }
+
+        // Small abstraction: map Move enum to display string
         private string GetMoveName(Move move)
         {
             switch (move)
@@ -339,6 +350,7 @@ namespace StreetFighter2
             }
         }
 
+        // Bottom UI: input options (separation of concerns)
         private void RenderBottomPanel()
         {
             int totalWidth = WindowWidth;
@@ -349,11 +361,11 @@ namespace StreetFighter2
             int column3Width = columnWidth;
 
             PanelConstructor bottomPanel = new PanelConstructor(column1Width, column3Width, showBorders: false);
-            
+
             bottomPanel.LeftAlignH = HorizontalAlign.Center;
             bottomPanel.CenterAlignH = HorizontalAlign.Center;
             bottomPanel.RightAlignH = HorizontalAlign.Center;
-            
+
             bottomPanel.LeftAlignV = VerticalAlign.Top;
             bottomPanel.CenterAlignV = VerticalAlign.Top;
             bottomPanel.RightAlignV = VerticalAlign.Top;
@@ -373,6 +385,7 @@ namespace StreetFighter2
             bottomPanel.RenderWithColors();
         }
 
+        // Helper: builds selectable option lines
         private string[] BuildActionContent(string[] options, bool isActive, int selectedIndex)
         {
             List<string> content = new List<string>();
@@ -392,6 +405,7 @@ namespace StreetFighter2
             return content.ToArray();
         }
 
+        // Final state presentation (UI-only responsibility)
         private void ShowBattleResult()
         {
             SetCursorPosition(0, 0);
@@ -407,20 +421,19 @@ namespace StreetFighter2
 
             RenderTopPanel();
 
-            
             int sideWidth = (WindowWidth - 2) / 3;
             PanelConstructor middlePanel = new PanelConstructor(sideWidth, sideWidth, 45, showBorders: false);
-            
+
             middlePanel.LeftAlignH = HorizontalAlign.Center;
             middlePanel.CenterAlignH = HorizontalAlign.Center;
             middlePanel.RightAlignH = HorizontalAlign.Center;
-            
+
             middlePanel.LeftAlignV = VerticalAlign.Middle;
             middlePanel.CenterAlignV = VerticalAlign.Middle;
             middlePanel.RightAlignV = VerticalAlign.Middle;
 
             string winner = player1.CurrentHealth > 0 ? $"P1 - {player1.Name}" : $"P2 - {player2.Name}";
-            string[] winContent = { 
+            string[] winContent = {
                 "═══════════════════",
                 "",
                 $"{winner}",
@@ -444,11 +457,11 @@ namespace StreetFighter2
             int column3Width = columnWidth;
 
             PanelConstructor bottomPanel = new PanelConstructor(column1Width, column3Width, showBorders: false);
-            
+
             bottomPanel.LeftAlignH = HorizontalAlign.Center;
             bottomPanel.CenterAlignH = HorizontalAlign.Center;
             bottomPanel.RightAlignH = HorizontalAlign.Center;
-            
+
             bottomPanel.LeftAlignV = VerticalAlign.Middle;
             bottomPanel.CenterAlignV = VerticalAlign.Middle;
             bottomPanel.RightAlignV = VerticalAlign.Middle;
@@ -458,7 +471,7 @@ namespace StreetFighter2
             bottomPanel.SetLeftContent("");
             bottomPanel.SetCenterContent(continuePrompt);
             bottomPanel.SetRightContent("");
-            
+
             bottomPanel.Render();
 
             ReadKey(true);

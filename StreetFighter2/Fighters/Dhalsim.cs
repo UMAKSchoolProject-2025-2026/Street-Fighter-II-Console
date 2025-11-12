@@ -6,28 +6,26 @@ using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: Dhalsim inherits from Fighter base class
+    // ============================================================
     class Dhalsim : Fighter
     {
-        //Constructor
         public Dhalsim()
         {
-            
-            Name = "Dhalism";
-            MaxHealth = 180;
-            CurrentHealth = 200;
+            Name = "Dhalsim";
+            MaxHealth = 175;
+            CurrentHealth = 175;
             AttackPower = 22;
-            DefensePower = 15;
+            DefensePower = 18;
             SpecialMovePower = 110;
-            SpecialMoveCost = 80;
+            SpecialMoveCost = 55;
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
-
-            
             Nationality = "Indian";
-            Background = "Yoga master and spiritual ascetic. Able to stretch his limbs and exhale fire through mystic training. Fights only when necessary to protect his village’s people.";
+            Background = "Yoga master who fights to raise money for his village. Stretches limbs to incredible lengths. Pacifist at heart but fights when necessary.";
 
-            
             string leftArt = @"
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -101,9 +99,56 @@ namespace StreetFighter2.Fighters
 ▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒░░░░░░░▒▒▒▒▓▓▓▒▒▒▒▓▓▓▒▒▒▓▓▒▒▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓";
 
             CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Dhalsim-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "YOGA FLAME";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Dhalsim-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "Breathes a mystical flame that engulfs opponents from a distance!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - Dhalsim keeps distance, dodge master
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (defenseMove == Move.Dodge)
+                return 0;
+            if (attackMove == Move.Special)
+                return 125;
+            if (attackMove == Move.LightAttack)
+                return 105;
+            if (attackMove == Move.HeavyAttack && defenseMove == Move.Block)
+                return 70;
+            
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Dhalsim builds SP through meditation
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 13, SpBarMax);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Dhalsim is fragile, low SP gain when hit
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 4, SpBarMax);
         }
     }
 }

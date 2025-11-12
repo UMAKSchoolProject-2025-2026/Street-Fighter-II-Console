@@ -6,28 +6,26 @@ using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: Blanka inherits from Fighter base class
+    // ============================================================
     class Blanka : Fighter
     {
-        //Constructor
         public Blanka()
         {
-            
             Name = "Blanka";
             MaxHealth = 195;
             CurrentHealth = 195;
-            AttackPower = 24;
-            DefensePower = 20;
-            SpecialMovePower = 100;
-            SpecialMoveCost = 65;
+            AttackPower = 26;
+            DefensePower = 22;
+            SpecialMovePower = 98;
+            SpecialMoveCost = 60;
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
-
-            
             Nationality = "Brazilian";
-            Background = "Wild man from the Amazon. Was a lost boy who survived a plane crash and adapted to jungle life. Can generate electricity through his altered physiology.";
+            Background = "Raised in the Amazon jungle after a plane crash. Feral instincts and electrical abilities make him unpredictable. Searches for his lost mother.";
 
-            
             string leftArt = @"
 █████████▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████
 █████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████
@@ -89,9 +87,57 @@ namespace StreetFighter2.Fighters
 █████████▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓█▓▓▓▓▓██████████████████████████████████████";
 
             CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Blanka-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "ELECTRIC THUNDER";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Blanka-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "Channels raw bioelectricity through his body, shocking anyone who gets close!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - Blanka is unpredictable, varied damage
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            Random rand = new Random();
+            int randomBonus = rand.Next(90, 120);
+            
+            if (attackMove == Move.LightAttack && defenseMove == Move.Block)
+                return 0;
+            if (attackMove == Move.HeavyAttack && defenseMove == Move.Dodge)
+                return 0;
+            
+            return randomBonus;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Blanka gains SP erratically
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            Random rand = new Random();
+            int spGain = rand.Next(8, 18);
+            SpBar = Math.Min(SpBar + spGain, SpBarMax);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Blanka gets angry when hit
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 12, SpBarMax);
         }
     }
 }

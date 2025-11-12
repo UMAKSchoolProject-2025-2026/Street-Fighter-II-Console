@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: Ken inherits from Fighter base class
+    // ============================================================
     class Ken : Fighter
     {
         //Constructor
@@ -27,7 +26,7 @@ namespace StreetFighter2.Fighters
             Nationality = "American";
             Background = "Ryu’s training partner and friendly rival. Comes from a wealthy family. Uses the same Ansatsuken, but with more flashy, aggressive style. Family man but still competitive.";
 
-            
+
             string leftArt = @"
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒░░░░░░░░▒▒▓▓▒▓▓▓▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -77,6 +76,53 @@ namespace StreetFighter2.Fighters
 
             
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Ken-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "SHORYUKEN";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with Ken-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "An invincible rising dragon punch that launches opponents skyward!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - Ken is aggressive, heavy hitter
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (attackMove == Move.HeavyAttack && defenseMove != Move.Dodge)
+                return 120;
+            if (attackMove == Move.Special)
+                return 110;
+            if (attackMove == Move.LightAttack && defenseMove == Move.Block)
+                return 0;
+            
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Ken is aggressive, lower SP gain
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 8, SpBarMax);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - Ken gains SP when hit (fighting spirit)
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 10, SpBarMax);
         }
     }
 }

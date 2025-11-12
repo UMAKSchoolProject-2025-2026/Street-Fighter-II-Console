@@ -12,7 +12,6 @@ namespace StreetFighter2
 
             GameManager game = new GameManager();
 
-            game.checkpoint();
             game.StartGame();
 
             WriteLine("\n\nPress any key...");

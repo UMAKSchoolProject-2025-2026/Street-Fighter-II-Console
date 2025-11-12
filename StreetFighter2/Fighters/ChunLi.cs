@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: ChunLi inherits from Fighter base class
+    // ============================================================
     class ChunLi : Fighter
     {
-        //Constructor
         public ChunLi()
         {
-            
             Name = "Chun-Li";
             MaxHealth = 185;
             CurrentHealth = 185;
@@ -22,12 +19,9 @@ namespace StreetFighter2.Fighters
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
-
-            
             Nationality = "Chinese";
             Background = "Interpol detective. Trained since childhood in martial arts. Mission-driven: hunts criminal syndicates and wants to honor her father. Fastest and most agile fighter.";
 
-            
             string leftArt = @"
 ████████████████████████████████████████████████████████████████████████████████
 ████████████████████████████████████████████████████████████████████████████████
@@ -89,9 +83,46 @@ namespace StreetFighter2.Fighters
 █████▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓█████";
 
             CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with ChunLi-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "KIKOKEN";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with ChunLi-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "A concentrated chi projectile that flies at lightning speed!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - ChunLi is fast, dodges better
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (defenseMove == Move.Dodge)
+                return 0;
+            if (attackMove == Move.LightAttack)
+                return 110;
+            if (attackMove == Move.HeavyAttack && defenseMove == Move.Block)
+                return 80;
+            
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - ChunLi builds SP quickly
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 12, SpBarMax);
         }
     }
 }

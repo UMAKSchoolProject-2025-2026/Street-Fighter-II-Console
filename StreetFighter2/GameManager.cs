@@ -1,50 +1,113 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static System.Console;
 
 namespace StreetFighter2
 {
+    // ============================================================
+    // ABSTRACTION: Interface for game modes
+    // ============================================================
+    public interface IGameMode
+    {
+        void Execute(AudioManager audioManager);
+    }
+
+    // ============================================================
+    // POLYMORPHISM: Different game mode implementations
+    // ============================================================
+    public class StoryModeGame : IGameMode
+    {
+        public void Execute(AudioManager audioManager)
+        {
+            CharacterSelect characterSelect = new CharacterSelect(audioManager);
+            characterSelect.Show();
+        }
+    }
+
+    public class VersusModeGame : IGameMode
+    {
+        public void Execute(AudioManager audioManager)
+        {
+            WriteLine("V.S. Battle mode - Coming Soon!");
+            ReadKey(true);
+        }
+    }
+
+    public class OptionModeGame : IGameMode
+    {
+        public void Execute(AudioManager audioManager)
+        {
+            WriteLine("Options menu - Coming Soon!");
+            ReadKey(true);
+        }
+    }
+
     class GameManager
     {
-        private AudioManager audioManger = new AudioManager();
-        public void checkpoint()
+        // ============================================================
+        // ENCAPSULATION: Private fields
+        // ============================================================
+        private readonly AudioManager audioManager;
+        private readonly string menuMusicPath;
+        private readonly float defaultVolume;
+
+        public GameManager()
         {
-            Console.Clear();
+            audioManager = new AudioManager();
+            menuMusicPath = "Audio/menu_theme.mp3";
+            defaultVolume = 0.5f;
+        }
+
+        // ============================================================
+        // ENCAPSULATION: Extract checkpoint logic
+        // ============================================================
+        public void ShowCheckpoint()
+        {
+            Clear();
             WriteLine(@"
 ===========================================================
 For the best Experience, Please set the console to fullscreen
 
-Once in fullscreen pressy any key to continue......
+Once in fullscreen press any key to continue......
 =============================================================
             ");
-            Console.ReadKey(true);
-
-            Console.Clear();
+            ReadKey(true);
+            Clear();
         }
 
         public void StartGame()
         {
             Title = "Street Fighter Demo";
-            runMainMenu();
+            ShowCheckpoint();
+            RunMainMenu();
         }
-        private void runMainMenu()
+
+        // ============================================================
+        // ENCAPSULATION: Private menu logic
+        // ============================================================
+        private void RunMainMenu()
         {
             CursorVisible = false;
             Clear();
 
-            audioManger.PlayMusic("Audio/menu_theme.mp3", loop: true);
-            audioManger.SetVolume(0.5f);
+            audioManager.PlayMusic(menuMusicPath, loop: true);
+            audioManager.SetVolume(defaultVolume);
 
-            PanelConstructor titlePanel = new PanelConstructor(10, 10);
+            DisplayTitle();
+            int selectedOption = DisplayMenuOptions();
 
-            titlePanel.CenterAlignH = HorizontalAlign.Center;
-            titlePanel.CenterAlignV = VerticalAlign.Top;
-            titlePanel.ShowBorders = false;
+            CursorVisible = true;
 
+            ExecuteMenuOption(selectedOption);
+        }
 
+        private void DisplayTitle()
+        {
+            PanelConstructor titlePanel = new PanelConstructor(10, 10)
+            {
+                CenterAlignH = HorizontalAlign.Center,
+                CenterAlignV = VerticalAlign.Top,
+                ShowBorders = false
+            };
 
             string title = @"
    ▄████████     ███        ▄████████    ▄████████    ▄████████     ███     
@@ -69,59 +132,51 @@ Once in fullscreen pressy any key to continue......
                                                                          ███    ███                
 ";
 
-
-
             string[] titleLines = title.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             titlePanel.SetCenterContent(titleLines);
             titlePanel.Render();
+        }
 
-            var menuPanel = new PanelConstructor(80, 80, 30); 
-            menuPanel.CenterAlignH = HorizontalAlign.Center;
-            menuPanel.CenterAlignV = VerticalAlign.Middle;
-            menuPanel.ShowBorders = false;
-            string[] options = { "GAME START", "V.S. BATTLE", "OPTION MODE", "QUIT" };
-
-            
-            int selectedIndex = menuPanel.RenderInteractiveMenu(options);
-
-            CursorVisible = true;
-
-            
-            switch (selectedIndex)
+        private int DisplayMenuOptions()
+        {
+            var menuPanel = new PanelConstructor(80, 80, 30)
             {
-                case 0:
-                    gameStart();
-                    break;
-                case 1:
-                    v_s_Battle();
-                    break;
-                case 2:
-                    optionMode();
-                    break;
-                case 3:
-                    quit();
-                    break;
+                CenterAlignH = HorizontalAlign.Center,
+                CenterAlignV = VerticalAlign.Middle,
+                ShowBorders = false
+            };
+
+            string[] options = { "GAME START", "V.S. BATTLE", "OPTION MODE", "QUIT" };
+            return menuPanel.RenderInteractiveMenu(options);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Use strategy pattern for menu options
+        // ============================================================
+        private void ExecuteMenuOption(int selectedIndex)
+        {
+            IGameMode gameMode = selectedIndex switch
+            {
+                0 => new StoryModeGame(),
+                1 => new VersusModeGame(),
+                2 => new OptionModeGame(),
+                3 => null,
+                _ => new StoryModeGame()
+            };
+
+            if (gameMode == null)
+            {
+                Quit();
+            }
+            else
+            {
+                gameMode.Execute(audioManager);
             }
         }
 
-        private void gameStart()
+        private void Quit()
         {
-            CharacterSelect characterSelect = new CharacterSelect(audioManger);
-            characterSelect.Show();
-        }
-
-        private void v_s_Battle()
-        {
-
-        }
-
-        private void optionMode()
-        {
-
-        }
-
-        private void quit()
-        {
+            audioManager.Dispose();
             Environment.Exit(0);
         }
     }

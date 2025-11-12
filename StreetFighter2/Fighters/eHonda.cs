@@ -6,28 +6,26 @@ using System.Threading.Tasks;
 
 namespace StreetFighter2.Fighters
 {
+    // ============================================================
+    // INHERITANCE: eHonda inherits from Fighter base class
+    // ============================================================
     class eHonda : Fighter
     {
-        //Constructor
         public eHonda()
         {
-            
             Name = "E. Honda";
-            MaxHealth = 225;
-            CurrentHealth = 225;
+            MaxHealth = 210;
+            CurrentHealth = 210;
             AttackPower = 28;
-            DefensePower = 25;
-            SpecialMovePower = 80;
-            SpecialMoveCost = 50;
+            DefensePower = 26;
+            SpecialMovePower = 92;
+            SpecialMoveCost = 70;
             SpBar = 0;
             SpBarMax = 100;
             Wins = 0;
-
-           
             Nationality = "Japanese";
-            Background = "Sumo grandmaster. Wants to prove Sumo is the greatest fighting art internationally. Runs a sumo dojo when not competing. Powerful but surprisingly fast.";
+            Background = "Sumo champion who wants to prove sumo wrestling is the world's greatest martial art. Traditional values with unstoppable power.";
 
-            
             string leftArt = @"
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -104,9 +102,56 @@ namespace StreetFighter2.Fighters
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓";
 
             CharacterSelectLeft = leftArt.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            
             CharacterSelectRight = new string[0];
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with E. Honda-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveName()
+        {
+            return "HUNDRED HAND SLAP";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method with E. Honda-specific implementation
+        // ============================================================
+        public override string GetSpecialMoveDescription()
+        {
+            return "A devastating barrage of rapid palm strikes delivered at lightning speed!";
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override abstract method - E. Honda is heavy hitter, strong attacks
+        // ============================================================
+        public override int CalculateDamageMultiplier(Move attackMove, Move defenseMove)
+        {
+            if (attackMove == Move.HeavyAttack && defenseMove != Move.Dodge)
+                return 130;
+            if (attackMove == Move.Special)
+                return 115;
+            if (attackMove == Move.LightAttack && defenseMove == Move.Block)
+                return 0;
+            if (defenseMove == Move.Dodge)
+                return 0;
+
+            return 100;
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - E. Honda gains less SP (slow build)
+        // ============================================================
+        public override void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 7, SpBarMax);
+        }
+
+        // ============================================================
+        // POLYMORPHISM: Override virtual method - E. Honda is tough, gains SP when hit
+        // ============================================================
+        public override void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 6, SpBarMax);
         }
     }
 }

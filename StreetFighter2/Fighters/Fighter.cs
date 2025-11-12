@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using StreetFighter2.Combat; 
 
 namespace StreetFighter2.Fighters
-{   
-
-    public class Fighter
+{
+    // ============================================================
+    // ABSTRACTION: Fighter is now abstract - defines contract
+    // ============================================================
+    public abstract class Fighter
     {
-        //Fields
+        // ============================================================
+        // ENCAPSULATION: Private fields with controlled access
+        // ============================================================
         private string name;
         private int maxHealth;
         private int currentHealth;
@@ -21,154 +20,141 @@ namespace StreetFighter2.Fighters
         private int spBar;
         private int spBarMax;
         private int wins;
-        const int maxWins = 2;
-
-       
+        private const int maxWins = 2;
         private string nationality;
         private string background;
-
         private string[] characterSelectLeft;
         private string[] characterSelectRight;
 
-        //Constructor
-        public Fighter(string name, int maxHealth, int currentHealth, int attackPower, int defensePower, int specialMovePower, int specialMoveCost, int spBar, int spBarMax, int wins)
-        {
-            this.name = name;
-            this.maxHealth = maxHealth;
-            this.currentHealth = currentHealth;
-            this.attackPower = attackPower;
-            this.defensePower = defensePower;
-            this.specialMovePower = specialMovePower;
-            this.specialMoveCost = specialMoveCost;
-            this.spBar = spBar;
-            this.spBarMax = spBarMax;
-            this.wins = wins;
-            
-            
-            this.nationality = "";
-            this.background = "";
-            
-            
-            this.characterSelectLeft = new string[0];
-            this.characterSelectRight = new string[0];
-        }
-
-        public Fighter()
-        {
-            name = "Unknown";
-            maxHealth = 200;
-            currentHealth = 200;
-            attackPower = 0;
-            defensePower = 0;
-            specialMovePower = 0;
-            specialMoveCost = 50;
-            spBar = 100;
-            spBarMax = 100;
-            wins = 0;
-            
-           
-            nationality = "";
-            background = "";
-            
-            
-            characterSelectLeft = new string[0];
-            characterSelectRight = new string[0];
-        }
-
-        //Methods
+        // ============================================================
+        // ENCAPSULATION: Public properties control access to private fields
+        // ============================================================
         public string Name
         {
-            get { return name; }
-            set { name = value; }
+            get => name;
+            protected set => name = value;
         }
 
         public int MaxHealth
         {
-            get { return maxHealth; }
-            set { maxHealth = value; }
+            get => maxHealth;
+            protected set => maxHealth = value > 0 ? value : 100;
         }
+
         public int CurrentHealth
         {
-            get { return currentHealth; }
-            set { currentHealth = value; }
+            get => currentHealth;
+            set => currentHealth = Math.Clamp(value, 0, maxHealth);
         }
+
         public int AttackPower
         {
-            get { return attackPower; }
-            set { attackPower = value; }
+            get => attackPower;
+            protected set => attackPower = value > 0 ? value : 10;
         }
 
         public int DefensePower
         {
-            get { return defensePower; }
-            set { defensePower = value; }
+            get => defensePower;
+            protected set => defensePower = value > 0 ? value : 10;
         }
 
         public int SpecialMovePower
         {
-            get { return specialMovePower; }
-            set { specialMovePower = value; }
+            get => specialMovePower;
+            protected set => specialMovePower = value > 0 ? value : 50;
         }
 
         public int SpecialMoveCost
         {
-            get { return specialMoveCost; }
-            set { specialMoveCost = value; }
+            get => specialMoveCost;
+            protected set => specialMoveCost = value > 0 ? value : 50;
         }
 
         public int SpBar
         {
-            get { return spBar; }
-            set { spBar = value; }
+            get => spBar;
+            set => spBar = Math.Clamp(value, 0, spBarMax);
         }
 
         public int SpBarMax
         {
-            get { return spBarMax; }
-            set { spBarMax = value; }
+            get => spBarMax;
+            protected set => spBarMax = value > 0 ? value : 100;
         }
 
         public int Wins
         {
-            get { return wins; }
-            set { wins = value; }
+            get => wins;
+            set => wins = Math.Clamp(value, 0, maxWins);
         }
 
         public string Nationality
         {
-            get { return nationality; }
-            set { nationality = value; }
+            get => nationality;
+            protected set => nationality = value;
         }
 
         public string Background
         {
-            get { return background; }
-            set { background = value; }
+            get => background;
+            protected set => background = value;
         }
 
         public string[] CharacterSelectLeft
         {
-            get { return characterSelectLeft; }
-            set { characterSelectLeft = value; }
+            get => characterSelectLeft;
+            protected set => characterSelectLeft = value;
         }
 
         public string[] CharacterSelectRight
         {
-            get { return characterSelectRight; }
-            set { characterSelectRight = value; }
+            get => characterSelectRight;
+            protected set => characterSelectRight = value;
         }
 
-        //Display Fighter Info
+        // ============================================================
+        // ABSTRACTION: Abstract methods - each fighter MUST implement
+        // ============================================================
+        public abstract string GetSpecialMoveName();
+        public abstract string GetSpecialMoveDescription();
+        public abstract int CalculateDamageMultiplier(Move attackMove, Move defenseMove);
+
+        // ============================================================
+        // POLYMORPHISM: Virtual methods - can be overridden by subclasses
+        // ============================================================
+        public virtual void OnAttackLanded(Fighter target, int damage)
+        {
+            SpBar = Math.Min(SpBar + 10, SpBarMax);
+        }
+
+        public virtual void OnDamageTaken(Fighter attacker, int damage)
+        {
+            SpBar = Math.Min(SpBar + 5, SpBarMax);
+        }
+
+        public virtual bool CanUseSpecialMove()
+        {
+            return SpBar >= SpecialMoveCost;
+        }
+
+        public virtual void ResetForNewRound()
+        {
+            CurrentHealth = MaxHealth;
+            SpBar = 0;
+        }
+
         public void DisplayInfo()
         {
-            Console.WriteLine("Fighter Name: " + name);
-            Console.WriteLine("Max Health: " + maxHealth);
-            Console.WriteLine("Current Health: " + currentHealth);
-            Console.WriteLine("Attack Power: " + attackPower);
-            Console.WriteLine("Defense Power: " + defensePower);
-            Console.WriteLine("Special Move Power: " + specialMovePower);
-            Console.WriteLine("SP Bar: " + spBar + "/" + spBarMax);
-            Console.WriteLine("Special Move Cost: " + specialMoveCost);
+            Console.WriteLine($"Fighter Name: {Name}");
+            Console.WriteLine($"Max Health: {MaxHealth}");
+            Console.WriteLine($"Current Health: {CurrentHealth}");
+            Console.WriteLine($"Attack Power: {AttackPower}");
+            Console.WriteLine($"Defense Power: {DefensePower}");
+            Console.WriteLine($"Special Move: {GetSpecialMoveName()}");
+            Console.WriteLine($"Special Power: {SpecialMovePower}");
+            Console.WriteLine($"SP Bar: {SpBar}/{SpBarMax}");
+            Console.WriteLine($"Special Move Cost: {SpecialMoveCost}");
         }
     }
 }
